@@ -130,7 +130,7 @@ function score(r) {
 function drawChart() {
   const chart = document.getElementById('chart');
   chart.textContent = '';
-  const data = rows.slice(0, 12).reverse();
+  const data = rows.slice().reverse();
   if (!data.length) return;
   const W = chart.clientWidth || 600, H = 220;
   const svg = d3.select(chart).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
