@@ -89,7 +89,7 @@ td.hit { color: var(--ok); font-weight: 600; }
 
   <section class="card">
     <h2>Points by week</h2>
-    <p class="note">Dashed line is the 9-point target.</p>
+    <p class="note">Dashed line is the 9-point target, orange line is your weekly average (current week left out).</p>
     <div class="chart" id="chart"></div>
   </section>
 
@@ -149,6 +149,20 @@ function drawChart() {
     .style('fill', d => d.points >= TARGET ? 'var(--accent)' : 'var(--bar-muted)');
   svg.append('line').attr('x1', ml).attr('x2', W - 4).attr('y1', y(TARGET)).attr('y2', y(TARGET))
     .style('stroke', 'var(--muted)').attr('stroke-dasharray', '4 4');
+  const past = rows.slice(1), AVG = past.length ? d3.mean(past, r => r.points) : null, ML = ml, AVGC = 'var(--accent2)';
+  // average line (solid) + labels for both lines, kept apart when values are close
+  const yT = y(TARGET);
+  if (AVG != null) {
+    const yA = y(AVG);
+    svg.append('line').attr('x1', ML).attr('x2', W - 4).attr('y1', yA).attr('y2', yA)
+      .style('stroke', AVGC).attr('stroke-width', 2).attr('stroke-linecap', 'round');
+    const avgAbove = AVG >= TARGET;
+    svg.append('text').attr('x', W - 6).attr('y', avgAbove ? Math.min(yA, yT) - 6 : Math.max(yA, yT) + 14).attr('text-anchor', 'end')
+      .style('fill', AVGC).style('font-weight', 600).text('Average ' + d3.format('.1f')(AVG));
+    svg.append('text').attr('x', W - 6).attr('y', avgAbove ? Math.max(yA, yT) + 14 : Math.min(yA, yT) - 6).attr('text-anchor', 'end')
+      .text('Target ' + TARGET);
+  }
+
   svg.append('g').selectAll('text').data(data).join('text')
     .attr('x', d => x(d.week) + x.bandwidth() / 2).attr('y', H - 6).attr('text-anchor', 'middle')
     .text((d, i) => (W < 500 && data.length > 6 && i % 2 && i !== data.length - 1) ? '' : fmtWeek(parseWeek(d.week)));
