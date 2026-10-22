@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weekly Content KPI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif&display=swap">
+<style>
+/* Layout: one centered column — header, this-week scorecard, per-type tiles, weekly chart, log table */
+:root {
+  --bg: #f6f5f2; --panel: #ffffff; --fg: #1d1c1a; --muted: #6b6862; --line: #e2dfd8;
+  --grid: #ebe8e1; --accent: #2f5bd3; --accent2: #c2672b; --accent3: #3e9a6b; --accent4: #8a4fc4;
+  --bar-muted: #c9c5bc; --ok: #2c8a57; --warn: #b07a12; --bad: #c0392b;
+  --serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #151514; --panel: #1e1e1c; --fg: #ecebe7; --muted: #a09d96; --line: #33322f;
+    --grid: #2a2a27; --accent: #7a9bff; --accent2: #e8955c; --accent3: #6cc796; --accent4: #b88ae8;
+    --bar-muted: #4a4843; --ok: #5fc78d; --warn: #e0b04a; --bad: #ef6b5d; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--sans); }
+.kp { max-width: 960px; margin-inline: auto; padding-block: 32px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 20px; }
+h1 { margin: 0; font: 400 2.4rem/1.1 var(--serif); text-wrap: balance; }
+.take { margin: 6px 0 0; color: var(--muted); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px; min-width: 0; }
+.card h2 { margin: 0; font-size: 1rem; font-weight: 500; }
+.note { margin: 4px 0 0; color: var(--muted); font-size: .8rem; }
+.score { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin-top: 14px; }
+.big { font: 400 4.5rem/1 var(--serif); font-variant-numeric: tabular-nums; }
+.of { color: var(--muted); font-size: 1.05rem; }
+.pill { font-size: .75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid currentColor; letter-spacing: .02em; }
+.pill.ok { color: var(--ok); } .pill.warn { color: var(--warn); } .pill.bad { color: var(--bad); }
+.bar { margin-top: 16px; height: 10px; border-radius: 999px; background: var(--grid); overflow: hidden; display: flex; }
+.bar span { height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; font-size: .8rem; color: var(--muted); }
+.legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: 12px; }
+.n { font: 400 2.4rem/1.1 var(--serif); font-variant-numeric: tabular-nums; margin-top: 8px; }
+.pts { color: var(--muted); font-size: .8rem; }
+.chart { position: relative; min-height: 220px; margin-top: 14px; }
+.chart svg text { font-family: var(--sans); font-size: 12px; fill: var(--muted); }
+.tip { position: absolute; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12); padding: 6px 10px; font-size: .8rem; pointer-events: none; white-space: nowrap; }
+.tip .d { color: var(--muted); }
+.tablewrap { overflow-x: auto; margin-top: 14px; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 500; font-size: .75rem; letter-spacing: .03em; text-transform: uppercase; }
+td.hit { color: var(--ok); font-weight: 600; }
+.wk-note { display: block; color: var(--muted); font-size: .75rem; font-style: italic; white-space: normal; }
+.err { color: var(--bad); }
+</style>
+</head>
+<body>
+<main class="kp">
+  <header>
+    <h1>Weekly content KPI</h1>
+    <p class="take" id="takeaway">Loading…</p>
+  </header>
+
+  <section class="card" id="this-week">
+    <h2 id="week-label">This week</h2>
+    <p class="note">Points: YouTube video 2 · advanced short 2 · motion graphic ad 2 · normal short 1. Weekly target 9 points (2 YouTube videos + 5 normal shorts).</p>
+    <div class="score">
+      <span class="big" id="points">—</span>
+      <span class="of">of 9 points</span>
+      <span class="pill" id="status-pill" hidden></span>
+    </div>
+    <div class="bar" id="mix-bar"></div>
+    <div class="legend" id="mix-legend"></div>
+  </section>
+
+  <section class="grid">
+    <div class="card"><h2>YouTube videos</h2><div class="n" data-field="youtube_videos">—</div><div class="pts">target 2 · 2 pts each</div></div>
+    <div class="card"><h2>Normal shorts</h2><div class="n" data-field="normal_shorts">—</div><div class="pts">target 5 · 1 pt each</div></div>
+    <div class="card"><h2>Advanced shorts</h2><div class="n" data-field="advanced_shorts">—</div><div class="pts">2 pts each</div></div>
+    <div class="card"><h2>Motion graphic ads</h2><div class="n" data-field="motion_ads">—</div><div class="pts">2 pts each</div></div>
+  </section>
+
+  <section class="card">
+    <h2>Points by week</h2>
+    <p class="note">Dashed line is the 9-point target.</p>
+    <div class="chart" id="chart"></div>
+  </section>
+
+  <section class="card">
+    <h2>Weekly log</h2>
+    <p class="note">Newest week first. Weeks start on Monday.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Week of</th><th>YouTube</th><th>Normal</th><th>Advanced</th><th>Motion ads</th><th>Points</th></tr></thead>
+        <tbody id="log-body"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+const TARGET = 9;
+const WEIGHTS = { youtube_videos: 2, normal_shorts: 1, advanced_shorts: 2, motion_ads: 2 };
+const parts = [
+  { key: 'youtube_videos', name: 'YouTube', color: 'var(--accent)' },
+  { key: 'normal_shorts', name: 'Normal shorts', color: 'var(--accent2)' },
+  { key: 'advanced_shorts', name: 'Advanced shorts', color: 'var(--accent3)' },
+  { key: 'motion_ads', name: 'Motion ads', color: 'var(--accent4)' }
+];
+const fmtWeek = d3.utcFormat('%b %-d');
+const parseWeek = (s) => new Date(s + 'T00:00:00Z');
+let rows = [];
+
+function score(r) {
+  const out = { week: r.week_start.slice(0, 10), note: (r.note || '').trim() };
+  let points = 0;
+  for (const k in WEIGHTS) { out[k] = Number(r[k]) || 0; points += out[k] * WEIGHTS[k]; }
+  out.points = points;
+  return out;
+}
+
+function drawChart() {
+  const chart = document.getElementById('chart');
+  chart.textContent = '';
+  const data = rows.slice(0, 12).reverse();
+  if (!data.length) return;
+  const W = chart.clientWidth || 600, H = 220;
+  const svg = d3.select(chart).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
+  const y = d3.scaleLinear([0, Math.max(TARGET, d3.max(data, d => d.points)) * 1.1], [H - 24, 8]).nice();
+  const yAxis = svg.append('g').call(d3.axisLeft(y).ticks(4)).attr('font-size', null).attr('font-family', null);
+  let ml = 0; yAxis.selectAll('text').each(function () { ml = Math.max(ml, this.getComputedTextLength()); });
+  ml += 14; yAxis.attr('transform', `translate(${ml},0)`);
+  yAxis.select('.domain').remove(); yAxis.selectAll('line').remove();
+  const x = d3.scaleBand(data.map(d => d.week), [ml, W - 4]).padding(0.3);
+  svg.append('g').selectAll('line').data(y.ticks(4)).join('line')
+    .attr('x1', ml).attr('x2', W - 4).attr('y1', d => y(d)).attr('y2', d => y(d)).style('stroke', 'var(--grid)');
+  const bw = Math.min(32, x.bandwidth());
+  const bars = svg.append('g').selectAll('rect').data(data).join('rect')
+    .attr('x', d => x(d.week) + (x.bandwidth() - bw) / 2).attr('width', bw)
+    .attr('y', d => y(d.points)).attr('height', d => y(0) - y(d.points)).attr('rx', 4)
+    .style('fill', d => d.points >= TARGET ? 'var(--accent)' : 'var(--bar-muted)');
+  svg.append('line').attr('x1', ml).attr('x2', W - 4).attr('y1', y(TARGET)).attr('y2', y(TARGET))
+    .style('stroke', 'var(--muted)').attr('stroke-dasharray', '4 4');
+  svg.append('g').selectAll('text').data(data).join('text')
+    .attr('x', d => x(d.week) + x.bandwidth() / 2).attr('y', H - 6).attr('text-anchor', 'middle')
+    .text((d, i) => (W < 500 && data.length > 6 && i % 2 && i !== data.length - 1) ? '' : fmtWeek(parseWeek(d.week)));
+  const tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; chart.appendChild(tip);
+  bars.on('mousemove', function (ev, d) {
+    tip.textContent = '';
+    const a = document.createElement('div'); a.className = 'd'; a.textContent = 'Week of ' + fmtWeek(parseWeek(d.week));
+    const b = document.createElement('div'); b.textContent = `${d.points} points (${d.points >= TARGET ? 'on target' : (TARGET - d.points) + ' short'})`;
+    tip.append(a, b);
+    if (d.note) { const c = document.createElement('div'); c.className = 'd'; c.textContent = d.note; tip.append(c); }
+    tip.hidden = false;
+    const [px, py] = d3.pointer(ev, chart);
+    tip.style.left = Math.max(0, Math.min(px + 12, chart.clientWidth - tip.offsetWidth)) + 'px';
+    tip.style.top = Math.max(0, py - 40) + 'px';
+  }).on('mouseleave', () => { tip.hidden = true; });
+}
+
+function render() {
+  const latest = rows[0];
+  if (!latest) { document.getElementById('takeaway').textContent = 'No weeks logged yet.'; return; }
+  document.getElementById('week-label').textContent = 'Week of ' + fmtWeek(parseWeek(latest.week));
+  document.getElementById('points').textContent = latest.points;
+  document.querySelectorAll('.n[data-field]').forEach(el => { el.textContent = latest[el.dataset.field]; });
+
+  const left = TARGET - latest.points;
+  const hits = rows.filter(r => r.points >= TARGET).length;
+  document.getElementById('takeaway').textContent = (left > 0
+    ? `${latest.points} of ${TARGET} points this week, ${left} to go.`
+    : `Target hit this week: ${latest.points} of ${TARGET} points.`) + ` ${hits} of ${rows.length} logged weeks on target.`;
+  const pill = document.getElementById('status-pill');
+  pill.hidden = false;
+  const cls = left <= 0 ? 'ok' : latest.points >= TARGET * 0.6 ? 'warn' : 'bad';
+  pill.className = 'pill ' + cls;
+  pill.textContent = { ok: 'On target', warn: 'Close', bad: 'Behind' }[cls];
+
+  const bar = document.getElementById('mix-bar'), legend = document.getElementById('mix-legend');
+  bar.textContent = ''; legend.textContent = '';
+  const scaleMax = Math.max(TARGET, latest.points);
+  parts.forEach(p => {
+    const pts = latest[p.key] * WEIGHTS[p.key];
+    if (pts > 0) { const s = document.createElement('span'); s.style.width = (pts / scaleMax * 100) + '%'; s.style.background = p.color; bar.appendChild(s); }
+    const l = document.createElement('span'); const sw = document.createElement('i'); sw.style.background = p.color;
+    l.append(sw, document.createTextNode(`${p.name} ${pts} pts`)); legend.appendChild(l);
+  });
+
+  const tb = document.getElementById('log-body'); tb.textContent = '';
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    [fmtWeek(parseWeek(r.week)), r.youtube_videos, r.normal_shorts, r.advanced_shorts, r.motion_ads, r.points].forEach((v, i) => {
+      const td = document.createElement('td'); td.textContent = v;
+      if (i === 5 && r.points >= TARGET) td.className = 'hit';
+      if (i === 0 && r.note) { const n = document.createElement('span'); n.className = 'wk-note'; n.textContent = r.note; td.appendChild(n); }
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+  drawChart();
+}
+
+fetch('kpi_log.csv', { cache: 'no-store' })
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+  .then(text => {
+    rows = d3.csvParse(text).map(score).sort((a, b) => (a.week < b.week ? 1 : -1));
+    render();
+    let t; window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(drawChart, 150); });
+  })
+  .catch(() => {
+    const el = document.getElementById('takeaway');
+    el.textContent = 'Couldn’t load kpi_log.csv.'; el.className = 'take err';
+  });
+</script>
+</body>
+</html>
