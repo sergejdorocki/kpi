@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif&display=swap">
 <style>
-/* Layout: one centered column — header, this-week scorecard, per-type tiles, weekly chart, log table */
+/* Layout: one centered column — header with average, weekly chart, log table */
 :root {
   --bg: #f6f5f2; --panel: #ffffff; --fg: #1d1c1a; --muted: #6b6862; --line: #e2dfd8;
   --grid: #ebe8e1; --accent: #2f5bd3; --accent2: #c2672b; --accent3: #3e9a6b; --accent4: #8a4fc4;
@@ -69,12 +69,6 @@ td.hit { color: var(--ok); font-weight: 600; }
   </header>
 
 
-  <section class="grid">
-    <div class="card"><h2>YouTube videos</h2><div class="n" data-field="youtube_videos">—</div><div class="pts">target 2 · 2 pts each</div></div>
-    <div class="card"><h2>Normal shorts</h2><div class="n" data-field="normal_shorts">—</div><div class="pts">target 5 · 1 pt each</div></div>
-    <div class="card"><h2>Advanced shorts</h2><div class="n" data-field="advanced_shorts">—</div><div class="pts">2 pts each</div></div>
-    <div class="card"><h2>Motion graphic ads</h2><div class="n" data-field="motion_ads">—</div><div class="pts">2 pts each</div></div>
-  </section>
 
   <section class="card">
     <h2>Points by week</h2>
@@ -172,7 +166,6 @@ function drawChart() {
 function render() {
   const latest = rows[0];
   if (!latest) { document.getElementById('takeaway').textContent = 'No weeks logged yet.'; return; }
-  document.querySelectorAll('.n[data-field]').forEach(el => { el.textContent = latest[el.dataset.field]; });
 
   const past = rows.slice(1);
   const avgEl = document.getElementById('avg'); avgEl.textContent = '';
