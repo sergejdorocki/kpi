@@ -192,7 +192,7 @@ function render() {
   if (past.length) {
     const avg = d3.mean(past, r => r.points);
     const b = document.createElement('b'); b.textContent = d3.format('.1f')(avg) + ' points';
-    avgEl.append('Weekly average: ', b, ` over the ${past.length} weeks before this one (${avg >= TARGET ? 'above' : 'below'} the ${TARGET}-point target).`);
+    avgEl.append('Weekly average: ', b, ` over the ${past.length} weeks before this one (${avg > TARGET + 0.05 ? 'above' : avg < TARGET - 0.05 ? 'below' : 'right on'} the ${TARGET}-point target).`);
   }
 
   const left = TARGET - latest.points;
