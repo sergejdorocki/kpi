@@ -72,13 +72,13 @@ td.hit { color: var(--ok); font-weight: 600; }
 
   <section class="card">
     <h2>Points by week</h2>
-    <p class="note">Dashed line is the 13-point target, orange line is your weekly average (includes this week).</p>
+    <p class="note">Dashed line is the 9-point target, orange line is your weekly average (includes this week).</p>
     <div class="chart" id="chart"></div>
   </section>
 
   <section class="card">
     <h2>Weekly log</h2>
-    <p class="note">Newest week first. Weeks start on Monday. Points: motion graphic ad 6 · YouTube video 4 · advanced short 2 · normal short 1.</p>
+    <p class="note">Newest week first. Weeks start on Monday. Points: motion graphic ad 4 · YouTube video 2 · advanced short 1.5 · normal short 1.</p>
     <div class="tablewrap">
       <table>
         <thead><tr><th>Week of</th><th>YouTube</th><th>Normal</th><th>Advanced</th><th>Motion ads</th><th>Points</th></tr></thead>
@@ -90,8 +90,8 @@ td.hit { color: var(--ok); font-weight: 600; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script>
-const TARGET = 13;
-const WEIGHTS = { youtube_videos: 4, normal_shorts: 1, advanced_shorts: 2, motion_ads: 6 };
+const TARGET = 9;
+const WEIGHTS = { youtube_videos: 2, normal_shorts: 1, advanced_shorts: 1.5, motion_ads: 4 };
 const parts = [
   { key: 'youtube_videos', name: 'YouTube', color: 'var(--accent)' },
   { key: 'normal_shorts', name: 'Normal shorts', color: 'var(--accent2)' },
