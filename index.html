@@ -72,7 +72,7 @@ td.hit { color: var(--ok); font-weight: 600; }
 
   <section class="card">
     <h2>Points by week</h2>
-    <p class="note">Dashed line is the 9-point target, orange line is your weekly average (current week left out).</p>
+    <p class="note">Dashed line is the 9-point target, orange line is your weekly average (includes this week).</p>
     <div class="chart" id="chart"></div>
   </section>
 
@@ -132,7 +132,7 @@ function drawChart() {
     .style('fill', d => d.points >= TARGET ? 'var(--accent)' : 'var(--bar-muted)');
   svg.append('line').attr('x1', ml).attr('x2', W - 4).attr('y1', y(TARGET)).attr('y2', y(TARGET))
     .style('stroke', 'var(--muted)').attr('stroke-dasharray', '4 4');
-  const past = rows.slice(1), AVG = past.length ? d3.mean(past, r => r.points) : null, ML = ml, AVGC = 'var(--accent2)';
+  const past = rows, AVG = past.length ? d3.mean(past, r => r.points) : null, ML = ml, AVGC = 'var(--accent2)';
   // average line (solid) + labels for both lines, kept apart when values are close
   const yT = y(TARGET);
   if (AVG != null) {
@@ -167,12 +167,12 @@ function render() {
   const latest = rows[0];
   if (!latest) { document.getElementById('takeaway').textContent = 'No weeks logged yet.'; return; }
 
-  const past = rows.slice(1);
+  const past = rows;
   const avgEl = document.getElementById('avg'); avgEl.textContent = '';
   if (past.length) {
     const avg = d3.mean(past, r => r.points);
     const b = document.createElement('b'); b.textContent = d3.format('.1f')(avg) + ' points';
-    avgEl.append('Weekly average: ', b, ` over the ${past.length} weeks before this one (${avg > TARGET + 0.05 ? 'above' : avg < TARGET - 0.05 ? 'below' : 'right on'} the ${TARGET}-point target).`);
+    avgEl.append('Weekly average: ', b, ` across all ${past.length} logged weeks, this week included (${avg > TARGET + 0.05 ? 'above' : avg < TARGET - 0.05 ? 'below' : 'right on'} the ${TARGET}-point target).`);
   }
 
   const left = TARGET - latest.points;
