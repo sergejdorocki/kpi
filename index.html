@@ -77,9 +77,9 @@ tfoot td { font-weight: 600; border-bottom: 0; }
     <p class="note">Each piece of content you finish earns points. The weekly target is the points for 2 YouTube videos + 5 normal shorts.</p>
     <div class="tablewrap">
       <table>
-        <thead><tr><th>Content</th><th>Points each</th><th>In the target</th><th>Target points</th></tr></thead>
+        <thead><tr><th>Content</th><th>Points each</th></tr></thead>
         <tbody id="points-body"></tbody>
-        <tfoot><tr><td>Weekly target</td><td></td><td></td><td id="points-total">—</td></tr></tfoot>
+        <tfoot><tr><td>Weekly target</td><td id="points-total">—</td></tr></tfoot>
       </table>
     </div>
   </section>
@@ -112,14 +112,12 @@ const parts = [
   { key: 'advanced_shorts', name: 'Advanced shorts', color: 'var(--accent3)' },
   { key: 'motion_ads', name: 'Motion ads', color: 'var(--accent4)' }
 ];
-const TARGET_MIX = { youtube_videos: 2, normal_shorts: 5 };
 const LABELS = { motion_ads: 'Motion graphic ad', youtube_videos: 'YouTube video', advanced_shorts: 'Advanced short', normal_shorts: 'Normal short' };
 (function drawPointsTable() {
   const tb = document.getElementById('points-body');
   Object.keys(WEIGHTS).sort((a, b) => WEIGHTS[b] - WEIGHTS[a]).forEach(k => {
     const tr = document.createElement('tr');
-    const n = TARGET_MIX[k] || 0;
-    [LABELS[k], WEIGHTS[k], n || '—', n ? n * WEIGHTS[k] : '—'].forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
+    [LABELS[k], WEIGHTS[k]].forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
     tb.appendChild(tr);
   });
   document.getElementById('points-total').textContent = TARGET + ' points';
