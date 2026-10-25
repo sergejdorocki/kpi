@@ -47,6 +47,7 @@ h1 { margin: 0; font: 400 2.4rem/1.1 var(--serif); text-wrap: balance; }
 .pts { color: var(--muted); font-size: .8rem; }
 .chart { position: relative; min-height: 220px; margin-top: 14px; }
 .chart svg text { font-family: var(--sans); font-size: 12px; fill: var(--muted); }
+.chart svg text.lbl { paint-order: stroke; stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; }
 .tip { position: absolute; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0,0,0,.12); padding: 6px 10px; font-size: .8rem; pointer-events: none; white-space: nowrap; }
 .tip .d { color: var(--muted); }
@@ -56,6 +57,7 @@ th, td { text-align: right; padding: 6px 10px; border-bottom: 1px solid var(--li
 th:first-child, td:first-child { text-align: left; }
 th { color: var(--muted); font-weight: 500; font-size: .75rem; letter-spacing: .03em; text-transform: uppercase; }
 td.hit { color: var(--ok); font-weight: 600; }
+tfoot td { font-weight: 600; border-bottom: 0; }
 .wk-note { display: block; color: var(--muted); font-size: .75rem; font-style: italic; white-space: normal; }
 .err { color: var(--bad); }
 </style>
@@ -70,6 +72,18 @@ td.hit { color: var(--ok); font-weight: 600; }
 
 
 
+  <section class="card" id="points-table">
+    <h2>How points work</h2>
+    <p class="note">Each piece of content you finish earns points. The weekly target is the points for 2 YouTube videos + 5 normal shorts.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Content</th><th>Points each</th><th>In the target</th><th>Target points</th></tr></thead>
+        <tbody id="points-body"></tbody>
+        <tfoot><tr><td>Weekly target</td><td></td><td></td><td id="points-total">—</td></tr></tfoot>
+      </table>
+    </div>
+  </section>
+
   <section class="card">
     <h2>Points by week</h2>
     <p class="note">Dashed line is the 9-point target, orange line is your weekly average (includes this week).</p>
@@ -78,7 +92,7 @@ td.hit { color: var(--ok); font-weight: 600; }
 
   <section class="card">
     <h2>Weekly log</h2>
-    <p class="note">Newest week first. Weeks start on Monday. Points: motion graphic ad 4 · YouTube video 2 · advanced short 1.5 · normal short 1.</p>
+    <p class="note">Newest week first. Weeks start on Monday.</p>
     <div class="tablewrap">
       <table>
         <thead><tr><th>Week of</th><th>YouTube</th><th>Normal</th><th>Advanced</th><th>Motion ads</th><th>Points</th></tr></thead>
@@ -98,6 +112,18 @@ const parts = [
   { key: 'advanced_shorts', name: 'Advanced shorts', color: 'var(--accent3)' },
   { key: 'motion_ads', name: 'Motion ads', color: 'var(--accent4)' }
 ];
+const TARGET_MIX = { youtube_videos: 2, normal_shorts: 5 };
+const LABELS = { motion_ads: 'Motion graphic ad', youtube_videos: 'YouTube video', advanced_shorts: 'Advanced short', normal_shorts: 'Normal short' };
+(function drawPointsTable() {
+  const tb = document.getElementById('points-body');
+  Object.keys(WEIGHTS).sort((a, b) => WEIGHTS[b] - WEIGHTS[a]).forEach(k => {
+    const tr = document.createElement('tr');
+    const n = TARGET_MIX[k] || 0;
+    [LABELS[k], WEIGHTS[k], n || '—', n ? n * WEIGHTS[k] : '—'].forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
+    tb.appendChild(tr);
+  });
+  document.getElementById('points-total').textContent = TARGET + ' points';
+})();
 const fmtWeek = d3.utcFormat('%b %-d');
 const parseWeek = (s) => new Date(s + 'T00:00:00Z');
 let rows = [];
@@ -140,9 +166,9 @@ function drawChart() {
     svg.append('line').attr('x1', ML).attr('x2', W - 4).attr('y1', yA).attr('y2', yA)
       .style('stroke', AVGC).attr('stroke-width', 2).attr('stroke-linecap', 'round');
     const avgAbove = AVG >= TARGET;
-    svg.append('text').attr('x', W - 6).attr('y', avgAbove ? Math.min(yA, yT) - 6 : Math.max(yA, yT) + 14).attr('text-anchor', 'end')
+    svg.append('text').attr('x', W - 6).attr('y', avgAbove ? Math.min(yA, yT) - 6 : Math.max(yA, yT) + 14).attr('text-anchor', 'end').attr('class', 'lbl')
       .style('fill', AVGC).style('font-weight', 600).text('Average ' + d3.format('.1f')(AVG));
-    svg.append('text').attr('x', W - 6).attr('y', avgAbove ? Math.max(yA, yT) + 14 : Math.min(yA, yT) - 6).attr('text-anchor', 'end')
+    svg.append('text').attr('x', W - 6).attr('y', avgAbove ? Math.max(yA, yT) + 14 : Math.min(yA, yT) - 6).attr('text-anchor', 'end').attr('class', 'lbl')
       .text('Target ' + TARGET);
   }
 
